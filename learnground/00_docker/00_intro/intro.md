@@ -6,7 +6,8 @@ A brief introduction to Docker, containers, images and some fundamental concepts
 
 - [History](#history)
 - [Concepts](#concepts)
-- [Example](#example)
+- [Basic container management](#basic-container-management)
+- [Summary](#summary)
 
 ### History
 
@@ -36,7 +37,7 @@ Quotes from the [Docker Overview](https://docs.docker.com/get-started/docker-ove
 
 An image is like a blueprint or template for creating a container. It contains all the necessary instructions and dependencies for running an application.
 
-### Example
+### Basic container management
 
 Let's play with a containerised application, so it be the [Alpine Linux lightweight distribution](https://www.alpinelinux.org/). Its Docker image is available on the [Docker Hub page](https://hub.docker.com/_/alpine/).
 
@@ -70,7 +71,7 @@ clamav/clamav                  latest    f0c30b4f8f54   2 months ago   238MB
 clickhouse/clickhouse-server   latest    d0207e6d8732   7 months ago   799MB
 ```
 
-The `alpine:3.21` image was created 4 weaks ago, it is not the latest version (which is got by `docker [image] pull alpine` command when no tag is specified) and it is the smallest available image I have even though it's Linux OS.
+The `alpine:3.21` image was created 4 weeks ago, it is not the latest version (which is got by `docker [image] pull alpine` command when no tag is specified) and it is the smallest available image I have even though it's Linux OS.
 
 A container - a runnable-instance of an image - can be just created (I don't need to run it now) via the [docker create](https://docs.docker.com/reference/cli/docker/container/create/) command. The `docker ps`, or [docker container ls](https://docs.docker.com/reference/cli/docker/container/ls/), command will list containers (by default, only running ones, that is why the `-a/--all` flag comes in handy).
 
@@ -109,7 +110,7 @@ It is "Linux 98fc7bc07196 ..." and the second part is the container's ID.
 About the `-it` flags:
 
 - `-i/--interactive` - keep STDIN (standard input stream) open even if not attached;
-- `-t/--tty` - allocate a pseudo-TTY (TTY stands for "teletype\[writer\]", but referes to a terminal emulator).
+- `-t/--tty` - allocate a pseudo-TTY (TTY stands for "teletype (writer)", but referes to a terminal emulator).
 
 Use cases:
 
@@ -131,7 +132,7 @@ Use cases:
   exit
   ```
 
-3. Only `--tty` - TTY is allocated, but STDIN is not kept open, so no actual interaction is in effect (you can play with <Tab> completions, in my case they didb't work):
+3. Only `--tty` - TTY is allocated, but STDIN is not kept open, so no actual interaction is in effect (you can play with <Tab> completions, in my case they didn't work):
 
   ```shell
   ╰─➤  docker exec -t my-alpine /bin/sh
@@ -145,7 +146,6 @@ Use cases:
 
 And only the `-it` combination gives fully interactive container terminal because STDIN are attached and TTY is allocated with terminal features.
 
-
 Ok, time to [stop](https://docs.docker.com/reference/cli/docker/container/stop/) and rest. By default, Docker stops a container by sending first a `SIGTERM` signal, and after a grace period, `SIGKILL`.
 
 ```shell
@@ -156,3 +156,104 @@ my-alpine
 CONTAINER ID   IMAGE         COMMAND     CREATED          STATUS                        PORTS     NAMES
 98fc7bc07196   alpine:3.21   "/bin/sh"   45 minutes ago   Exited (137) 15 seconds ago             my-alpine
 ```
+
+Not so fast, let's start the container again with either `docker start` or [docker container restart](https://docs.docker.com/reference/cli/docker/container/restart/) command, doesn't matter which one to use.
+
+```shell
+╰─➤  docker restart my-alpine
+my-alpine
+╰─➤  docker exec -it my-alpine /bin/sh
+/ # apk update
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/main/x86_64/APKINDEX.tar.gz
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/community/x86_64/APKINDEX.tar.gz
+v3.21.7-82-gdbf1ea75c8d [https://dl-cdn.alpinelinux.org/alpine/v3.21/main]
+v3.21.7-80-g817c7780e5f [https://dl-cdn.alpinelinux.org/alpine/v3.21/community]
+OK: 25397 distinct packages available
+/ # apk add caddy
+(1/2) Installing ca-certificates (20260413-r0)
+(2/2) Installing caddy (2.8.4-r7)
+Executing caddy-2.8.4-r7.pre-install
+Executing busybox-1.37.0-r14.trigger
+Executing ca-certificates-20260413-r0.trigger
+OK: 52 MiB
+/ # exit
+```
+
+If I restart the container again, the installed dependencies will remain.
+
+```shell
+╰─➤  docker exec -it my-alpine /bin/sh
+/ # apk info --installed caddy  # installed before
+caddy
+/ # apk info --installed nginx  # were not installed
+/ # ps -elf
+PID   USER     TIME  COMMAND
+    1 root      0:00 /bin/sh
+   37 root      0:00 /bin/sh
+   43 root      0:00 ps -elf
+/ # exit
+```
+
+Restarting a running container is like `docker stop` followed by `docker start`. The main process (PID 1) is restarted, yet the container state is preserved.
+
+If, for some reason, you don't want a container to consume CPU resources, you can [docker container pause](https://docs.docker.com/reference/cli/docker/container/pause/)
+and [docker container unpause](https://docs.docker.com/reference/cli/docker/container/unpause/) it. Pausing a container is like freezing all processes inside a running container. The CPU for the paused processes is dropped to 0, but non-CPU resources (RAM, file descriptors, network connections, disks etc.) are not affected.
+
+Now, time to remove the container with [docker container rm](https://docs.docker.com/reference/cli/docker/container/rm/) and recreate it via [docker container run](https://docs.docker.com/reference/cli/docker/container/run/). This time I don't need the previous `docker create --memory=1G --cpus=1 --name=my-alpine -it alpine:3.21`, the `docker run` command will do the work for me.
+
+```shell
+╰─➤  docker stop my-alpine
+my-alpine
+╰─➤  docker container rm my-alpine
+my-alpine
+╰─➤  docker run --memory=1G --cpus=1 --name=my-alpine -it alpine:3.21
+
+/ # apk update
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/main/x86_64/APKINDEX.tar.gz
+fetch https://dl-cdn.alpinelinux.org/alpine/v3.21/community/x86_64/APKINDEX.tar.gz
+v3.21.7-82-gdbf1ea75c8d [https://dl-cdn.alpinelinux.org/alpine/v3.21/main]
+v3.21.7-80-g817c7780e5f [https://dl-cdn.alpinelinux.org/alpine/v3.21/community]
+OK: 25397 distinct packages available
+/ # apk info --installed caddy
+/ # apk info --installed nginx
+/ # apk add caddy
+(1/2) Installing ca-certificates (20260413-r0)
+(2/2) Installing caddy (2.8.4-r7)
+Executing caddy-2.8.4-r7.pre-install
+Executing busybox-1.37.0-r14.trigger
+Executing ca-certificates-20260413-r0.trigger
+OK: 52 MiB in 17 packages
+/ # exit
+╰─➤  docker ps --all
+CONTAINER ID   IMAGE         COMMAND     CREATED              STATUS                      PORTS     NAMES
+7543982c6beb   alpine:3.21   "/bin/sh"   About a minute ago   Exited (0) 48 seconds ago             my-alpine
+╰─➤  docker exec -it my-alpine /bin/sh
+/ # apk add caddy
+OK: 52 MiB in 17 packages
+/ # apk info --installed nginx
+/ # apk info --installed caddy
+caddy
+/ # exit
+```
+
+Trying without the `-it` flags leads to an immediated quit because the primary process for an Alpine container is a shell (`/bin/sh`) and without STDIN and TTY it just exits. The fancy feature is that the container is created, therefore it can be \[re\]started with a [Caddy](https://caddyserver.com/) dependency already in the container's system.
+
+Yeah, docker run is like `docker create` + `docker start` in one bottle. I thought that in that bottle comes `docker exec`, but it's not quite the same: `docker exec` attaches to an already running container and launches additional processes apart from the main one, while `docker run` creates and starts a new container's main process ("sh" in case of Alpine Linux) and thanks to the `-it` flags it is possible to interact with the container's shell on fly.
+
+### Summary
+
+Basics are over, key takeaways:
+
+- A Docker image is a read‑only template with instructions for creating a Docker container. Think of it as a blueprint or snapshot that includes: the application code; runtime environment (e.g., Node.js, Python, Java); system tools and libraries; configuration files and settings; dependencies required to run the application.
+
+- A Docker container is a runnable instance of an image. When you start (run) an image, it becomes a container. A container is the actual running application with its own isolated environment. Analogy: if an image is a program’s executable file (e.g., app.exe), then a container is that program running in memory (a process).
+
+Overview of Docker commands:
+
+- `docker pull alpine:3.21` - pull (download) an Alpine Linux image (!) from the Docker Hub (official docker container registry).
+- `docker create [OPTIONS] IMAGE [COMMAND] [ARG...]` - create a container from the given image.
+- `docker start/stop/restart; pause/unpause` commands are used to control the lifecycle of a container. `docker restart` = `docker stop` + `docker start`.
+- `docker exec` - run a process in an already running container.
+- `docker run` = `docker create` + `docker start`.
+
+By the way, `docker start -ai my-alpine` is enough to start an interactive shell session in an Alpine Linux container, so no need to use the `docker exec` command.
