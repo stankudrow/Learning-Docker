@@ -124,7 +124,7 @@ Use cases:
 2. Only `--interactive` - STDIN is kept open without terminal features (TTY is not allocated):
 
   ```shell
-  ╰─➤  docker exec -i my-alpine /bin/sh                                     
+  ╰─➤  docker exec -i my-alpine /bin/sh
   echo "Hi"
   Hi
   uname -a
@@ -146,12 +146,11 @@ Use cases:
 
 And only the `-it` combination gives fully interactive container terminal because STDIN are attached and TTY is allocated with terminal features.
 
-Ok, time to [stop](https://docs.docker.com/reference/cli/docker/container/stop/) and rest. By default, Docker stops a container by sending first a `SIGTERM` signal, and after a grace period, `SIGKILL`.
+Ok, time to [stop](https://docs.docker.com/reference/cli/docker/container/stop/) and rest. By default, Docker stops a container by sending first `SIGTERM` signal, and after a grace period, `SIGKILL`.
 
 ```shell
 ╰─➤  docker stop my-alpine
 my-alpine
-╭─stankudrow@honorable ~/Projects/Learning-Docker  ‹main*›
 ╰─➤  docker ps --all
 CONTAINER ID   IMAGE         COMMAND     CREATED          STATUS                        PORTS     NAMES
 98fc7bc07196   alpine:3.21   "/bin/sh"   45 minutes ago   Exited (137) 15 seconds ago             my-alpine
@@ -196,10 +195,10 @@ PID   USER     TIME  COMMAND
 
 Restarting a running container is like `docker stop` followed by `docker start`. The main process (PID 1) is restarted, yet the container state is preserved.
 
-If, for some reason, you don't want a container to consume CPU resources, you can [docker container pause](https://docs.docker.com/reference/cli/docker/container/pause/)
-and [docker container unpause](https://docs.docker.com/reference/cli/docker/container/unpause/) it. Pausing a container is like freezing all processes inside a running container. The CPU for the paused processes is dropped to 0, but non-CPU resources (RAM, file descriptors, network connections, disks etc.) are not affected.
+If, for some reason, you don't want a container to consume CPU resources, you can [docker \[container\] pause](https://docs.docker.com/reference/cli/docker/container/pause/)
+and [docker \[container\] unpause](https://docs.docker.com/reference/cli/docker/container/unpause/) it. Pausing a container is like freezing all processes inside a running container. The CPU for the paused processes is dropped to 0, but non-CPU resources (RAM, file descriptors, network connections, disks etc.) are not affected.
 
-Now, time to remove the container with [docker container rm](https://docs.docker.com/reference/cli/docker/container/rm/) and recreate it via [docker container run](https://docs.docker.com/reference/cli/docker/container/run/). This time I don't need the previous `docker create --memory=1G --cpus=1 --name=my-alpine -it alpine:3.21`, the `docker run` command will do the work for me.
+Now, time to remove the container with [docker \[container\] rm](https://docs.docker.com/reference/cli/docker/container/rm/) and recreate it via [docker \[container\] run](https://docs.docker.com/reference/cli/docker/container/run/). This time I don't need the previous `docker create --memory=1G --cpus=1 --name=my-alpine -it alpine:3.21`, the `docker run` command will do the work for me.
 
 ```shell
 ╰─➤  docker stop my-alpine
@@ -224,9 +223,11 @@ Executing busybox-1.37.0-r14.trigger
 Executing ca-certificates-20260413-r0.trigger
 OK: 52 MiB in 17 packages
 / # exit
+
 ╰─➤  docker ps --all
 CONTAINER ID   IMAGE         COMMAND     CREATED              STATUS                      PORTS     NAMES
 7543982c6beb   alpine:3.21   "/bin/sh"   About a minute ago   Exited (0) 48 seconds ago             my-alpine
+
 ╰─➤  docker exec -it my-alpine /bin/sh
 / # apk add caddy
 OK: 52 MiB in 17 packages
@@ -236,7 +237,7 @@ caddy
 / # exit
 ```
 
-Trying without the `-it` flags leads to an immediated quit because the primary process for an Alpine container is a shell (`/bin/sh`) and without STDIN and TTY it just exits. The fancy feature is that the container is created, therefore it can be \[re\]started with a [Caddy](https://caddyserver.com/) dependency already in the container's system.
+Trying without the `-it` flags leads to an immediated quit because the primary process for an Alpine container is a shell (`/bin/sh`) and without STDIN and TTY it just exits. The fancy feature is that the container is created, therefore it can be \[re\]started with [Caddy](https://caddyserver.com/) dependency already in the container's system.
 
 Yeah, docker run is like `docker create` + `docker start` in one bottle. I thought that in that bottle comes `docker exec`, but it's not quite the same: `docker exec` attaches to an already running container and launches additional processes apart from the main one, while `docker run` creates and starts a new container's main process ("sh" in case of Alpine Linux) and thanks to the `-it` flags it is possible to interact with the container's shell on fly.
 
