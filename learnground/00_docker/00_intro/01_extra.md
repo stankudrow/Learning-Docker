@@ -1,4 +1,4 @@
-# Introduction
+# Introduction (extra)
 
 An extra note with supplimentary jottings.
 
@@ -101,7 +101,7 @@ Well, that is all for now. To summarise, a container registry is a service (or s
 
 ### Windows containers on Linux
 
-I work on Linux, but can I pull Windows containers? It appears so:
+I work on Linux nostly and I wonder if pulling and working with Windows containers is possible? Instead of theorising, let's try it out:
 
 ```shell
 ╰─➤  docker pull mcr.microsoft.com/powershell:alpine
@@ -133,8 +133,8 @@ Thursday, May 21, 2026 8:34:33 PM
 PS /> exit
 ```
 
-Damn, I virtually have to find a way to restore my collection of deleted books on PowerShell :)
+Damn, I was too quick to delete those PowerShell scripting books :)
 
 ### Summary
 
-A registry is a service (or system) where images are stored. Registries can be public like Docker Hub, or private. Images are stored in repositories, versioned with tags and are identifiable by digests (hash sums). Repositories itself can be grouped with namespaces.
+A registry is a service (or system) where images are stored. Images are stored in repositories, versioned with tags and are identifiable by digests (hash sums). Repositories itself can be grouped with namespaces.

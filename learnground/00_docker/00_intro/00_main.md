@@ -31,9 +31,7 @@ These "dreams" came true with containers - they are like lightweight VMS because
 
 Quotes from the [Docker Overview](https://docs.docker.com/get-started/docker-overview/):
 
-> An image is a read-only template with instructions for creating a Docker container
-
-> A container is a runnable instance of an image
+> An image is a read-only template with instructions for creating a Docker container. A container is a runnable instance of an image.
 
 An image is like a blueprint or template for creating a container. It contains all the necessary instructions and dependencies for running an application.
 
@@ -88,6 +86,16 @@ CONTAINER ID   IMAGE         COMMAND     CREATED              STATUS          PO
 98fc7bc07196   alpine:3.21   "/bin/sh"   About a minute ago   Up 19 seconds             my-alpine
 ```
 
+Actually. `docker ps` would do without `-a/--all` flag because, by default, it only shows running containers. Remarks on listed columns from the `docker ps` output:
+
+- CONTAINER ID: the unique identifier of the container
+- IMAGE: the image used to create the container
+- COMMAND: the command that was executed when the container was created (here the shell)
+- CREATED: the date and time the container was created
+- STATUS: the current status of the container (up = running)
+- PORTS: the ports that are exposed by the container (none)
+- NAMES: the name of the container (if not specified, Docker will choose a random name)
+
 And now, the Red-Letter moment, entering the container...technically, [exec](https://docs.docker.com/reference/cli/docker/container/exec/)uting the "/bin/sh" command in the running "my-alpine" container:
 
 ```shell
@@ -99,13 +107,13 @@ dev    home   media  opt    root   sbin   sys    usr
 / # uname -a
 Linux 98fc7bc07196 6.8.0-111-generic #111-Ubuntu SMP PREEMPT_DYNAMIC Sat Apr 11 23:16:02 UTC 2026 x86_64 Linux
 / # exit
-...
+
 ╰─➤  docker ps
 CONTAINER ID   IMAGE         COMMAND     CREATED          STATUS          PORTS     NAMES
 98fc7bc07196   alpine:3.21   "/bin/sh"   18 minutes ago   Up 17 minutes             my-alpine
 ```
 
-It is "Linux 98fc7bc07196 ..." and the second part is the container's ID.
+Yep "Linux 98fc7bc07196 ..." and the second part is the container's ID.
 
 About the `-it` flags:
 
@@ -198,7 +206,7 @@ Restarting a running container is like `docker stop` followed by `docker start`.
 If, for some reason, you don't want a container to consume CPU resources, you can [docker \[container\] pause](https://docs.docker.com/reference/cli/docker/container/pause/)
 and [docker \[container\] unpause](https://docs.docker.com/reference/cli/docker/container/unpause/) it. Pausing a container is like freezing all processes inside a running container. The CPU for the paused processes is dropped to 0, but non-CPU resources (RAM, file descriptors, network connections, disks etc.) are not affected.
 
-Now, time to remove the container with [docker \[container\] rm](https://docs.docker.com/reference/cli/docker/container/rm/) and recreate it via [docker \[container\] run](https://docs.docker.com/reference/cli/docker/container/run/). This time I don't need the previous `docker create --memory=1G --cpus=1 --name=my-alpine -it alpine:3.21`, the `docker run` command will do the work for me.
+Now, time to remove the container with [docker \[container\] rm](https://docs.docker.com/reference/cli/docker/container/rm/) command. This time I don't need the previous `docker create --memory=1G --cpus=1 --name=my-alpine -it alpine:3.21`, I just wanna [docker \[container\] run](https://docs.docker.com/reference/cli/docker/container/run/) a container from the image.
 
 ```shell
 ╰─➤  docker stop my-alpine
@@ -239,7 +247,119 @@ caddy
 
 Trying without the `-it` flags leads to an immediated quit because the primary process for an Alpine container is a shell (`/bin/sh`) and without STDIN and TTY it just exits. The fancy feature is that the container is created, therefore it can be \[re\]started with [Caddy](https://caddyserver.com/) dependency already in the container's system.
 
-Yeah, docker run is like `docker create` + `docker start` in one bottle. I thought that in that bottle comes `docker exec`, but it's not quite the same: `docker exec` attaches to an already running container and launches additional processes apart from the main one, while `docker run` creates and starts a new container's main process ("sh" in case of Alpine Linux) and thanks to the `-it` flags it is possible to interact with the container's shell on fly.
+So, `docker run` is like `docker create` + `docker start` in one bottle. I thought that in that bottle comes `docker exec`, but it's not quite the same: `docker exec` attaches to an already running container and launches a command inside it without creating a new container, while `docker run` creates and starts a new container's from the image (if an image is not present, it is pulled first).
+
+### Cleaning up
+
+Let's list all containers in the system
+
+```shell
+─➤  docker ps -a
+CONTAINER ID   IMAGE                                 COMMAND     CREATED        STATUS                    PORTS     NAMES
+4a97d04fc82a   mcr.microsoft.com/powershell:alpine   "pwsh"      23 hours ago   Exited (0) 23 hours ago             gracious_lewin
+7543982c6beb   alpine:3.21                           "/bin/sh"   45 hours ago   Exited (0) 44 hours ago             my-alpine
+```
+
+Their status is "Exited (0)" - execution suscessfully (status code 0) completed. The PowerShell container appeared throughout writing an [extra introductory note](./01_extra.md). Let's run it and try to remove via the [docker \[container\] rm (also remove)](https://docs.docker.com/engine/reference/commandline/container_rm/) command (also `docker container rm`, `docker container remove`, but not `docker remove`, see `docker rm --help`).
+
+I run PowerShell in one terminal:
+```shell
+╰─➤  docker run -it mcr.microsoft.com/powershell:alpine pwsh
+
+PowerShell 7.4.2
+PS />
+```
+
+... and trying to remove the container in another one:
+```shell
+╰─➤  docker ps
+CONTAINER ID   IMAGE                                 COMMAND   CREATED              STATUS          PORTS     NAMES
+d693f1b99b68   mcr.microsoft.com/powershell:alpine   "pwsh"    About a minute ago   Up 59 seconds             thirsty_chatterjee
+
+╰─➤  docker rm d693f1b99b68
+Error response from daemon: cannot remove container "/thirsty_chatterjee": container is running: stop the container before removing or force remove
+```
+
+Let's remove it forcefully by sending `SIGKILL`:
+```shell
+╰─➤  docker rm -f d693f1b99b68
+d693f1b99b68
+```
+
+And the PowerShell session is expectedly terminated.
+```shell
+╰─➤  docker run -it mcr.microsoft.com/powershell:alpine pwsh
+
+PowerShell 7.4.2
+PS /> % 
+```
+
+But what is that?!
+```shell
+╰─➤  docker ps -a
+CONTAINER ID   IMAGE                                 COMMAND     CREATED        STATUS                    PORTS     NAMES
+4a97d04fc82a   mcr.microsoft.com/powershell:alpine   "pwsh"      23 hours ago   Exited (0) 23 hours ago             gracious_lewin
+7543982c6beb   alpine:3.21                           "/bin/sh"   45 hours ago   Exited (0) 44 hours ago             my-alpine
+```
+
+Nothing wrong because I ran a new container (named "thirsty_chatterjee") from the `mcr.microsoft.com/powershell:alpine` image, not the previously exited (named "gracious_lewin"). So...so long, gracious_lewin.
+
+```shell
+╰─➤  docker rm 4a97d04fc82a
+4a97d04fc82a
+```
+
+The container is gone, but not the image and it's fair.
+
+```shell
+─➤  docker images
+REPOSITORY                     TAG                         IMAGE ID       CREATED        SIZE
+caddy                          2.11-alpine                 5190456911ce   9 days ago     62.9MB
+ghcr.io/astral-sh/uv           0.11.13-python3.12-alpine   ad61364a0f5f   11 days ago    107MB
+alpine                         3.21                        2607caa98058   5 weeks ago    7.83MB
+clamav/clamav                  latest                      f0c30b4f8f54   2 months ago   238MB
+clickhouse/clickhouse-server   latest                      d0207e6d8732   7 months ago   799MB
+mcr.microsoft.com/powershell   alpine                      4591c431eb2f   2 years ago    222MB
+```
+
+But I don't need to remove it, I would like to remove the alpine:v3.21 (2607caa98058) image via the [docker rmi](https://docs.docker.com/engine/reference/commandline/rmi/) command (also `docker image rm`, `docker image remove`).
+
+```shell
+╰─➤  docker rmi 2607caa98058
+Error response from daemon: conflict: unable to delete 2607caa98058 (must be forced) - image is being used by stopped container 7543982c6beb
+
+╰─➤  docker rmi -f 2607caa98058
+Untagged: alpine:3.21
+Untagged: alpine@sha256:48b0309ca019d89d40f670aa1bc06e426dc0931948452e8491e3d65087abc07d
+Deleted: sha256:2607caa9805847fac4de202017bb1b830deb09f4c07dc9964a0157abbc604577
+
+╰─➤  docker images
+REPOSITORY                     TAG                         IMAGE ID       CREATED        SIZE
+caddy                          2.11-alpine                 5190456911ce   9 days ago     62.9MB
+ghcr.io/astral-sh/uv           0.11.13-python3.12-alpine   ad61364a0f5f   11 days ago    107MB
+clamav/clamav                  latest                      f0c30b4f8f54   2 months ago   238MB
+clickhouse/clickhouse-server   latest                      d0207e6d8732   7 months ago   799MB
+mcr.microsoft.com/powershell   alpine                      4591c431eb2f   2 years ago    222MB
+```
+
+Nice, but here is a peeky detail.
+
+```shell
+╰─➤  docker ps -a
+CONTAINER ID   IMAGE          COMMAND     CREATED        STATUS                    PORTS     NAMES
+7543982c6beb   2607caa98058   "/bin/sh"   45 hours ago   Exited (0) 44 hours ago             my-alpine
+```
+
+The image (template) is removed, but the container is an independent entity. Images are build-time constructs and containers are run-time ones. I can even start the container and it is not harmed by the image removal.
+
+```shell
+╰─➤  docker start -ai my-alpine
+/ # echo Yeah
+Yeah
+/ # exit
+```
+
+Ok, sorry to se "my-alpine" fo, but it is what it is with `docker rm my-alpine`.
 
 ### Summary
 
@@ -251,10 +371,11 @@ Basics are over, key takeaways:
 
 Overview of Docker commands:
 
-- `docker pull alpine:3.21` - pull (download) an Alpine Linux image (!) from the Docker Hub (official docker container registry).
-- `docker create [OPTIONS] IMAGE [COMMAND] [ARG...]` - create a container from the given image.
-- `docker start/stop/restart; pause/unpause` commands are used to control the lifecycle of a container. `docker restart` = `docker stop` + `docker start`.
-- `docker exec` - run a process in an already running container.
-- `docker run` = `docker create` + `docker start`.
+- `docker pull alpine:3.21` - pull (download) an Alpine Linux image (!) from the Docker Hub (official docker container registry)
+- `docker create [OPTIONS] IMAGE [COMMAND] [ARG...]` - create a container from the given image
+- `docker start/stop/restart; pause/unpause` commands are used to control the lifecycle of a container. `docker restart` = `docker stop` + `docker start`
+- `docker exec` - run a process in an already running container
+- `docker run` = `docker create` + `docker start`
+- get rid of conatainers with `docker rm` (also `docker container remove`) and say goodbye to images with `docker rmi` (or `docker image (rm | remove)`) commands (use `-f/--force` responsibly)
 
 By the way, `docker start -ai my-alpine` is enough to start an interactive shell session in an Alpine Linux container, so no need to use the `docker exec` command.
