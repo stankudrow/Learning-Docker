@@ -17,7 +17,7 @@ Bad old days:
 2. On the dev server the application works great, yet it cannot be installed/deployed/run on the production server: OS (operating system), dependencies, configuration, whatever.
 3. And other similar cases of incompatibilities and issues that make hard or even impossible running multiple applications on the same server.
 
-The virtualisation technology was a game changer because it made possible to run multiple __isolated__ (!) applications on the same server. A virtual machine (VM) is a software emulation of a physical computer. Each VM has its own virtual (!) hardware: CPU, RAM, disks, network interfaces and so forth. Key features of VMs are: 1) isolation (from the host system and other applications); 2) hardware independence (the same VM can be run on different servers); 3) multiple OS support (the same VM can run different operating systems). However, VMs come with price vbecause running a VM requires emulating hardware and software resources -> this is a resource-intensive process with significant overhead.
+The virtualisation technology was a game changer because it made possible to run multiple __isolated__ (!) applications on the same server. A virtual machine (VM) is a software emulation of a physical computer. Each VM has its own virtual (!) hardware: CPU, RAM, disks, network interfaces and so forth. Key features of VMs are: 1) isolation (from the host system and other applications); 2) hardware independence (the same VM can be run on different servers); 3) multiple OS support (the same VM can run different operating systems). However, VMs come at price because running a VM requires emulating hardware and software resources -> this is a resource-intensive process with significant overhead.
 
 The things would be easier if:
 
@@ -164,7 +164,7 @@ CONTAINER ID   IMAGE         COMMAND     CREATED          STATUS                
 98fc7bc07196   alpine:3.21   "/bin/sh"   45 minutes ago   Exited (137) 15 seconds ago             my-alpine
 ```
 
-Not so fast, let's start the container again with either `docker start` or [docker container restart](https://docs.docker.com/reference/cli/docker/container/restart/) command, doesn't matter which one to use.
+Not so fast, let's start the container again with either `docker start` or [docker container restart](https://docs.docker.com/reference/cli/docker/container/restart/) command, does not matter which one to use.
 
 ```shell
 ╰─➤  docker restart my-alpine
@@ -260,7 +260,7 @@ CONTAINER ID   IMAGE                                 COMMAND     CREATED        
 7543982c6beb   alpine:3.21                           "/bin/sh"   45 hours ago   Exited (0) 44 hours ago             my-alpine
 ```
 
-Their status is "Exited (0)" - execution suscessfully (status code 0) completed. The PowerShell container appeared throughout writing an [extra introductory note](./01_extra.md). Let's run it and try to remove via the [docker \[container\] rm (also remove)](https://docs.docker.com/engine/reference/commandline/container_rm/) command (also `docker container rm`, `docker container remove`, but not `docker remove`, see `docker rm --help`).
+Their status is "Exited (0)" - execution successfully (status code 0) completed. The PowerShell container appeared throughout writing an [extra introductory note](./01_extra.md). Let's run it and try to remove via the [docker \[container\] rm (also remove)](https://docs.docker.com/engine/reference/commandline/container_rm/) command (also `docker container rm`, `docker container remove`, but not `docker remove`, see `docker rm --help`).
 
 I run PowerShell in one terminal:
 ```shell
@@ -359,7 +359,7 @@ Yeah
 / # exit
 ```
 
-Ok, sorry to se "my-alpine" fo, but it is what it is with `docker rm my-alpine`.
+Ok, sorry to see "my-alpine" to go, but it is what it is with `docker rm my-alpine`.
 
 ### Summary
 
@@ -376,6 +376,6 @@ Overview of Docker commands:
 - `docker start/stop/restart; pause/unpause` commands are used to control the lifecycle of a container. `docker restart` = `docker stop` + `docker start`
 - `docker exec` - run a process in an already running container
 - `docker run` = `docker create` + `docker start`
-- get rid of conatainers with `docker rm` (also `docker container remove`) and say goodbye to images with `docker rmi` (or `docker image (rm | remove)`) commands (use `-f/--force` responsibly)
+- get rid of containers with `docker rm` (also `docker container remove`) and say goodbye to images with `docker rmi` (or `docker image (rm | remove)`) commands (use `-f/--force` responsibly)
 
 By the way, `docker start -ai my-alpine` is enough to start an interactive shell session in an Alpine Linux container, so no need to use the `docker exec` command.
