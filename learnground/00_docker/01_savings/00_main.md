@@ -238,3 +238,5 @@ I "don't know" about either the [docker \[image\] inspect](https://docs.docker.c
 - Willing to have the full archive of an image with layers, metadata and history? -> `docker image save`
 - Care only about a lightweight snapshot of a container? -> `docker container export`
 - Time to restore images? -> `docker image import` (URL, local tarball etc.) against `docker export` or `docker image load` from the `docker save`d tarball.
+
+By the way, there is an [sqlite3](https://hub.docker.com/r/keinos/sqlite3) image.

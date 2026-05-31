@@ -203,10 +203,9 @@ PID   USER     TIME  COMMAND
 
 Restarting a running container is like `docker stop` followed by `docker start`. The main process (PID 1) is restarted, yet the container state is preserved.
 
-If, for some reason, you don't want a container to consume CPU resources, you can [docker \[container\] pause](https://docs.docker.com/reference/cli/docker/container/pause/)
-and [docker \[container\] unpause](https://docs.docker.com/reference/cli/docker/container/unpause/) it. Pausing a container is like freezing all processes inside a running container. The CPU for the paused processes is dropped to 0, but non-CPU resources (RAM, file descriptors, network connections, disks etc.) are not affected.
+If, for some reason, you don't want a container to consume CPU resources, you can [docker \[container\] pause](https://docs.docker.com/reference/cli/docker/container/pause/) and [docker \[container\] unpause](https://docs.docker.com/reference/cli/docker/container/unpause/) it. Pausing a container is like freezing all processes inside a running container so that the existing are stopped and a new one cannot be started.
 
-Now, time to remove the container with [docker \[container\] rm](https://docs.docker.com/reference/cli/docker/container/rm/) command. This time I don't need the previous `docker create --memory=1G --cpus=1 --name=my-alpine -it alpine:3.21`, I just wanna [docker \[container\] run](https://docs.docker.com/reference/cli/docker/container/run/) a container from the image.
+The next turn is to remove the container with [docker \[container\] rm](https://docs.docker.com/reference/cli/docker/container/rm/) command. This time I don't need the previous `docker create --memory=1G --cpus=1 --name=my-alpine -it alpine:3.21`, I just wanna [docker \[container\] run](https://docs.docker.com/reference/cli/docker/container/run/) a container from the image.
 
 ```shell
 ╰─➤  docker stop my-alpine
@@ -247,7 +246,7 @@ caddy
 
 Trying without the `-it` flags leads to an immediated quit because the primary process for an Alpine container is a shell (`/bin/sh`) and without STDIN and TTY it just exits. The fancy feature is that the container is created, therefore it can be \[re\]started with [Caddy](https://caddyserver.com/) dependency already in the container's system.
 
-So, `docker run` is like `docker create` + `docker start` in one bottle. I thought that in that bottle comes `docker exec`, but it's not quite the same: `docker exec` attaches to an already running container and launches a command inside it without creating a new container, while `docker run` creates and starts a new container's from the image (if an image is not present, it is pulled first).
+So, `docker run` is like `docker pull` (if the image does not exist) + `docker create` (if the container is not exists) + `docker start` in one bottle. Note (and do check it out!) that you cannot run a stopped container with `docker exec` because this command attaches to an **already running container** and launches a command inside it.
 
 ### Cleaning up
 

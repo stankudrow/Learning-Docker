@@ -32,7 +32,7 @@ Caddy was pulled from the Docker Hub registry via the [docker \[image\] pull](ht
 - repository: `caddy`
 - tag: `2.11-alpine`
 
-A tag is the version of a concrete image in a repository. A repository is a collection of images with the same name but different tags. A namespace helps to logically grouprepositories within the registry. A registry domain is the server (registry) address. So, the full path to the image is "docker.io/library/caddy:2.11-alpine":
+A tag is the version of a concrete image in a repository. A repository is a collection of images with the same name but different tags. A namespace helps to logically group repositories, usually by user or organisation to prevent name conflicts and provide means to organise repositories within the registry service. A registry domain is the server (registry) address. So, for instance, the full path to the Caddy server image is "docker.io/library/caddy:2.11-alpine":
 
 ```shell
 ╰─➤  docker pull docker.io/library/caddy:2.11-alpine
@@ -75,7 +75,7 @@ Status: Image is up to date for caddy@sha256:86deaf5e3d3408a6ccec08fbb79989783dd
 docker.io/library/caddy@sha256:86deaf5e3d3408a6ccec08fbb79989783dd26e206ae10bcf78a801dc8c9ab794
 ```
 
-Awesome! Now, let's download the image if the [uv](https://docs.astral.sh/uv/) project manager. The [GitHub Packages page](https://github.com/orgs/astral-sh/packages?repo_name=uv) lists available versions and I am interested in "0.11.13-python3.12-alpine" (checkable [here](https://github.com/astral-sh/uv/pkgs/container/uv/versions?filters%5Bversion_type%5D=tagged)). The thing is that I need to pull it from the GitHub domain, so it should be specified for the Docker client is opinionated and defaults to Docker Hub.
+Awesome! Now, let's download the [uv](https://docs.astral.sh/uv/) project manager image. The [GitHub Packages page](https://github.com/orgs/astral-sh/packages?repo_name=uv) lists available versions and I am interested in "0.11.13-python3.12-alpine" (checkable [here](https://github.com/astral-sh/uv/pkgs/container/uv/versions?filters%5Bversion_type%5D=tagged)). The thing is that I need to pull it from the GitHub domain, so it should be specified for the Docker client is opinionated and defaults to Docker Hub.
 
 ```shell
 ╰─➤  docker pull ghcr.io/astral-sh/uv:0.11.13-python3.12-alpine
